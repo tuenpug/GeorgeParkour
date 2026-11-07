@@ -831,7 +831,7 @@ function buildMaterials(){
   MAT.sunPatch=new T.MeshBasicMaterial({map:TX.sun,transparent:true,opacity:.2,depthWrite:false,blending:T.AdditiveBlending,color:'#ffe2b0',polygonOffset:true,polygonOffsetFactor:-3});
   MAT.sky=new T.MeshBasicMaterial({color:new T.Color(2.0,2.1,2.3)});
   MAT.lampGlow=new T.SpriteMaterial({map:TX.puff,color:'#ffd9a0',transparent:true,opacity:.42,depthWrite:false,blending:T.AdditiveBlending});
-  MAT.marker=std('#ff7a1f',.35,0,{emissive:new T.Color('#ff7a1f'),emissiveIntensity:.6});
+  MAT.marker=std('#ff7a1f',.35,0,{emissive:new T.Color('#ff7a1f'),emissiveIntensity:.8,transparent:true,opacity:.7,depthWrite:false});
   MAT.cone=std('#ff6a13',.5);
   MAT.rope=std('#cdb68a',.95);
   MAT.trampMat=std('#ffffff',.9,0,{map:TX.trampMat});
@@ -2609,7 +2609,7 @@ class Game{
     this.sun=new T.DirectionalLight('#fff0da',1.6); this.sun.castShadow=true; const sm=renderer.capabilities.maxTextureSize>=8192?4096:2048; this.sun.shadow.mapSize.set(sm,sm); const sc=this.sun.shadow.camera; sc.left=-10; sc.right=10; sc.top=10; sc.bottom=-10; sc.near=1; sc.far=40; this.sun.shadow.bias=-.0004; this.sun.shadow.normalBias=.025; scene.add(this.sun); scene.add(this.sun.target);
     this.player=new Player(this); this.coach=new Coach(this);
     this.friends=[new Friend({skin:'#e8bb93',hair:'#3a2617',shirt:'#3fa45f',shorts:'#2b3240',shoe:'#22262b',accent:'#ff7a1f'},3.4,7.9),new Friend({skin:'#f0cdb0',hair:'#151110',shirt:'#8a5bd6',shorts:'#30343c',shoe:'#ff7aa8',accent:'#fff',ponytail:true},4.6,7.9)];
-    this.marker=new T.Group(); const cone=mesh(new T.ConeGeometry(.16,.34,24),MAT.marker,this.marker,0,0,0); cone.rotation.x=Math.PI; const ring=new T.Mesh(new T.TorusGeometry(.2,.025,8,32),MAT.marker); ring.rotation.x=Math.PI/2; ring.position.y=.26; this.marker.add(ring); scene.add(this.marker);
+    this.marker=new T.Group(); const cone=mesh(new T.ConeGeometry(.16,.34,24),MAT.marker,this.marker,0,0,0); cone.rotation.x=Math.PI;  scene.add(this.marker);
     this.cam={yaw:0,pitch:.27,dist:4.7,target:new T.Vector3(),manualT:9,fov:50};
     PARK=buildPark(); this.level=new Level(PARK); this.modeType='stage'; this.si=0; this.tasks=[]; this.results=[]; this.ti=0; this.stageT=30; this.styleP=0; this.starsGot=0; this.clock=0; this.finished=false;
     this.bindInput(); this.bindUI(); this.renderMap(); this.showScreen('title');
@@ -3093,7 +3093,7 @@ class Game{
     for(const z of lv.zips) if(z.riding&&p.state!=='zip'){ z.riding=false; z.ret=1; }
     if(Math.floor(this.time)!==Math.floor(this.time-dt)) lv.drawClock();
     this.sbT-=dt; if(this.sbT<=0){ this.sbT=.25; lv.drawBoard('GEORGE',this.free?this.clock:Math.max(0,this.stageT),this.styleP,this.free?this.starsGot+'/'+lv.starList.length:SLBL(this.si)); }
-    const mp=this.markerPos(); this.markerTarget=mp; this.marker.visible=this.mode!=='menu'&&this.mode!=='countdown'&&!this.finished; this.hintT=Math.max(0,(this.hintT||0)-dt); const ms=1+(this.hintT>0?.6*Math.abs(Math.sin(this.time*8)):0); this.marker.scale.setScalar(ms); this.marker.position.set(mp.x,mp.y+Math.sin(this.time*3)*.12,mp.z); this.marker.rotation.y+=dt*1.5;
+    const mp=this.markerPos(); this.markerTarget=mp; const pp=this.player.pos, near=Math.hypot(mp.x-pp.x,mp.z-pp.z)<2.2, camNear=camera.position.distanceTo(mp)<3.2; this.marker.visible=this.mode!=='menu'&&this.mode!=='countdown'&&!this.finished&&!near&&!camNear&&this.player.state!=='swing'; this.hintT=Math.max(0,(this.hintT||0)-dt); const ms=.6*(1+(this.hintT>0?.5*Math.abs(Math.sin(this.time*8)):0)); this.marker.scale.setScalar(ms); this.marker.position.set(mp.x,mp.y+.9+Math.sin(this.time*3)*.08,mp.z); this.marker.rotation.y+=dt*1.5;
     if(lv.bell&&!this.free){ const W=lv.xMax-lv.xMin; const f=clamp((p.pos.x-lv.xMin)/W,0,1)*100; $('#trackMe').style.left=f+'%'; $('#trackFill').style.width=f+'%'; }
     if(this.mode==='play'){ if(this.flowT>0){ this.flowT-=dt; if(this.flowT<=0){ this.flowT=0; this.toast('Flow mode over. Chain moves to fill it again!'); } } else this.flow=Math.max(0,(this.flow||0)-dt*.035); }
     Sfx.urgent=this.mode==='play'&&!this.finished&&this.stageT<=5; Sfx.bright=this.flowT>0;
